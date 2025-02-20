@@ -53,42 +53,35 @@ const Hero = () => {
   }, [isMobile]);
 
   useGSAP(() => {
-    const videoFrame = document.querySelector("#video-frame");
-    
-    if (!isMobile) {
-      gsap.set(videoFrame, {
-        clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
-        borderRadius: "0% 0% 40% 10%",
-      });
-      
-      gsap.from(videoFrame, {
-        clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-        borderRadius: "0% 0% 0% 0%",
-        ease: "power1.inOut",
-        scrollTrigger: {
-          trigger: videoFrame,
-          start: "center center",
-          end: "bottom center",
-          scrub: true,
-        },
-      });
-    } else {
-      // Reset any clip-path and border-radius for mobile
-      gsap.set(videoFrame, {
-        clipPath: "none",
-        borderRadius: 0,
-      });
-    }
-
-    // Cleanup function
-    return () => {
-      if (videoFrame) {
-        gsap.set(videoFrame, {
-          clearProps: "all"
+    let ctx = gsap.context(() => {
+      if (!isMobile) {
+        gsap.set("#video-frame", {
+          clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
+          borderRadius: "0% 0% 40% 10%",
+        });
+        
+        gsap.from("#video-frame", {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          borderRadius: "0% 0% 0% 0%",
+          ease: "power1.inOut",
+          scrollTrigger: {
+            trigger: "#video-frame",
+            start: "center center",
+            end: "bottom center",
+            scrub: true,
+          },
+        });
+      } else {
+        // For mobile, reset the clip-path
+        gsap.set("#video-frame", {
+          clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
+          borderRadius: "0",
         });
       }
-    };
-  }, [isMobile]);
+    }, containerRef);
+
+    return () => ctx.revert(); // cleanup
+  }, [isMobile]); // Add isMobile as dependency
 
   return (
     <div 
@@ -110,6 +103,7 @@ const Hero = () => {
       <div
         id="video-frame"
         className={`relative z-10 h-dvh w-screen overflow-hidden bg-black ${isMobile ? '' : 'rounded-lg'}`}
+        style={{ clipPath: isMobile ? 'none' : undefined }}
       >
         <div className="relative h-full w-full">
           {!isMobile && (
