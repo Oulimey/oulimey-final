@@ -24,7 +24,6 @@ const Hero = () => {
 
   const handleVideoLoad = () => {
     if (isMobile) {
-      // For mobile: Keep loading screen for exactly 4 seconds regardless of video load
       setTimeout(() => {
         setLoading(false);
         if (videoRef.current) {
@@ -33,7 +32,6 @@ const Hero = () => {
         }
       }, 4000);
     } else {
-      // For desktop: Keep original behavior
       setLoading(false);
       if (videoRef.current) {
         videoRef.current.loop = true;
@@ -42,7 +40,6 @@ const Hero = () => {
     }
   };
 
-  // Start the 4-second timer for mobile as soon as component mounts
   useEffect(() => {
     if (isMobile) {
       setTimeout(() => {
@@ -56,24 +53,41 @@ const Hero = () => {
   }, [isMobile]);
 
   useGSAP(() => {
+    const videoFrame = document.querySelector("#video-frame");
+    
     if (!isMobile) {
-      gsap.set("#video-frame", {
+      gsap.set(videoFrame, {
         clipPath: "polygon(14% 0, 72% 0, 88% 90%, 0 95%)",
         borderRadius: "0% 0% 40% 10%",
       });
       
-      gsap.from("#video-frame", {
+      gsap.from(videoFrame, {
         clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
         borderRadius: "0% 0% 0% 0%",
         ease: "power1.inOut",
         scrollTrigger: {
-          trigger: "#video-frame",
+          trigger: videoFrame,
           start: "center center",
           end: "bottom center",
           scrub: true,
         },
       });
+    } else {
+      // Reset any clip-path and border-radius for mobile
+      gsap.set(videoFrame, {
+        clipPath: "none",
+        borderRadius: 0,
+      });
     }
+
+    // Cleanup function
+    return () => {
+      if (videoFrame) {
+        gsap.set(videoFrame, {
+          clearProps: "all"
+        });
+      }
+    };
   }, [isMobile]);
 
   return (
@@ -93,17 +107,13 @@ const Hero = () => {
         </div>
       )}
       
-      {/* Main container with black background */}
       <div
         id="video-frame"
         className={`relative z-10 h-dvh w-screen overflow-hidden bg-black ${isMobile ? '' : 'rounded-lg'}`}
       >
-        {/* Content container */}
         <div className="relative h-full w-full">
-          {/* Desktop Layout */}
           {!isMobile && (
             <>
-              {/* Background Image Layer */}
               <div className="absolute inset-0 z-10">
                 <img
                   src="img/hero-bg.webp"
@@ -112,7 +122,6 @@ const Hero = () => {
                 />
               </div>
 
-              {/* Video Layer */}
               <div className="absolute z-20 flex h-full w-full items-center justify-end pr-4">
                 <video
                   ref={videoRef}
@@ -127,10 +136,8 @@ const Hero = () => {
             </>
           )}
 
-          {/* Mobile Layout */}
           {isMobile && (
             <div className="flex h-full flex-col">
-              {/* Video Section */}
               <div className="flex h-1/2 w-full items-center justify-center">
                 <video
                   ref={videoRef}
@@ -143,7 +150,6 @@ const Hero = () => {
                 />
               </div>
 
-              {/* Image Section */}
               <div className="h-1/2 w-full">
                 <img
                   src="img/hero-bg.webp"
@@ -160,7 +166,6 @@ const Hero = () => {
         </h1>
       </div>
 
-      {/* Black text version for both mobile and desktop */}
       <h1 className="special-font hero-heading absolute bottom-5 right-5 text-black">
         A DEC<b>A</b>DE OF C<b>O</b>DING
       </h1>
