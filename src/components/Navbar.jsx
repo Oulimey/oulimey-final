@@ -18,12 +18,29 @@ const NavBar = () => {
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Toggle audio and visual indicator
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
     setIsIndicatorActive((prev) => !prev);
   };
+
+  // Check if the device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth <= 768); // Adjust breakpoint as needed
+    };
+    
+    // Initial check
+    checkIfMobile();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', checkIfMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIfMobile);
+  }, []);
 
   // Manage audio playback
   useEffect(() => {
@@ -36,9 +53,15 @@ const NavBar = () => {
 
   useEffect(() => {
     if (currentScrollY === 0) {
-      // Topmost position: show navbar without floating-nav
+      // Topmost position: show navbar
       setIsNavVisible(true);
-      navContainerRef.current.classList.remove("floating-nav");
+      // For mobile: don't remove floating-nav at top so navbar is fully visible
+      if (!isMobile) {
+        navContainerRef.current.classList.remove("floating-nav");
+      } else {
+        // For mobile: always keep floating-nav class even at the top
+        navContainerRef.current.classList.add("floating-nav");
+      }
     } else if (currentScrollY > lastScrollY) {
       // Scrolling down: hide navbar and apply floating-nav
       setIsNavVisible(false);
@@ -50,7 +73,7 @@ const NavBar = () => {
     }
 
     setLastScrollY(currentScrollY);
-  }, [currentScrollY, lastScrollY]);
+  }, [currentScrollY, lastScrollY, isMobile]);
 
   useEffect(() => {
     gsap.to(navContainerRef.current, {
@@ -61,66 +84,58 @@ const NavBar = () => {
   }, [isNavVisible]);
 
   return (
-    <div
+    <nav
       ref={navContainerRef}
-      className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
+      className="fixed top-0 left-0 w-full z-50 transition-all duration-300"
     >
-      <header className="absolute top-1/2 w-full -translate-y-1/2">
-        <nav className="flex size-full items-center justify-between p-4">
-          {/* Logo Video and Product button */}
-          <div className="flex items-center gap-7">
-            <video
-              ref={videoRef}
-              className="h-16 w-auto object-contain"
-              autoPlay
-              muted
-              playsInline
-              loop
-            >
-              <source src="videos/vidlogo.mp4" type="video/mp4" />
-            </video>
-          </div>
+      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+        {/* Logo Video and Product button */}
+        <div className="flex items-center">
+          <video
+            ref={videoRef}
+            className="h-10 w-10 rounded-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          >
+            <source src="/logo-animation.mp4" type="video/mp4" />
+          </video>
+        </div>
 
-          {/* Navigation Links and Audio Button */}
-          <div className="flex h-full items-center">
-            <div className="hidden md:block">
-              {navItems.map((item, index) => (
-                <a
-                  key={index}
-                  href={`#${item.toLowerCase()}`}
-                  className="nav-hover-btn"
-                >
-                  {item}
-                </a>
-              ))}
-            </div>
+        {/* Navigation Links and Audio Button */}
+        <div className="flex items-center space-x-4">
+          <ul className="hidden md:flex space-x-6">
+            {navItems.map((item, index) => (
+              <li key={index} className="text-white hover:text-gray-300 cursor-pointer">
+                {item}
+              </li>
+            ))}
+          </ul>
 
-            <button
-              onClick={toggleAudioIndicator}
-              className="ml-10 flex items-center space-x-0.5"
-            >
-              <audio
-                ref={audioElementRef}
-                className="hidden"
-                src="/audio/loop.mp3"
-                loop
-              />
-              {[1, 2, 3, 4].map((bar) => (
-                <div
-                  key={bar}
-                  className={clsx("indicator-line", {
-                    active: isIndicatorActive,
-                  })}
-                  style={{
-                    animationDelay: `${bar * 0.1}s`,
-                  }}
-                />
-              ))}
-            </button>
-          </div>
-        </nav>
-      </header>
-    </div>
+          <button
+            onClick={toggleAudioIndicator}
+            className="relative w-8 h-6 flex flex-col justify-between"
+          >
+            {[1, 2, 3, 4].map((bar) => (
+              <span
+                key={bar}
+                className={clsx(
+                  "h-[2px] bg-white transition-all duration-500",
+                  isIndicatorActive
+                    ? "animate-audio-indicator"
+                    : "w-full"
+                )}
+                style={{
+                  animationDelay: `${bar * 0.1}s`,
+                }}
+              ></span>
+            ))}
+          </button>
+        </div>
+      </div>
+      <audio ref={audioElementRef} src="/background-music.mp3" loop />
+    </nav>
   );
 };
 
