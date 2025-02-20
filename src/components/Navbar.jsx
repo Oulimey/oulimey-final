@@ -9,6 +9,7 @@ const NavBar = () => {
   // State for toggling audio and visual indicator
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isIndicatorActive, setIsIndicatorActive] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Refs for audio, video, and navigation container
   const audioElementRef = useRef(null);
@@ -18,7 +19,6 @@ const NavBar = () => {
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Toggle audio and visual indicator
   const toggleAudioIndicator = () => {
@@ -26,21 +26,10 @@ const NavBar = () => {
     setIsIndicatorActive((prev) => !prev);
   };
 
-  // Check if the device is mobile
-  useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768); // Adjust breakpoint as needed
-    };
-    
-    // Initial check
-    checkIfMobile();
-    
-    // Add event listener for window resize
-    window.addEventListener('resize', checkIfMobile);
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
 
   // Manage audio playback
   useEffect(() => {
@@ -52,16 +41,11 @@ const NavBar = () => {
   }, [isAudioPlaying]);
 
   useEffect(() => {
+    // Keep same scroll behavior for both mobile and desktop
     if (currentScrollY === 0) {
-      // Topmost position: show navbar
+      // Topmost position: show navbar without floating-nav
       setIsNavVisible(true);
-      // For mobile: don't remove floating-nav at top so navbar is fully visible
-      if (!isMobile) {
-        navContainerRef.current.classList.remove("floating-nav");
-      } else {
-        // For mobile: always keep floating-nav class even at the top
-        navContainerRef.current.classList.add("floating-nav");
-      }
+      navContainerRef.current.classList.remove("floating-nav");
     } else if (currentScrollY > lastScrollY) {
       // Scrolling down: hide navbar and apply floating-nav
       setIsNavVisible(false);
@@ -73,9 +57,10 @@ const NavBar = () => {
     }
 
     setLastScrollY(currentScrollY);
-  }, [currentScrollY, lastScrollY, isMobile]);
+  }, [currentScrollY, lastScrollY]);
 
   useEffect(() => {
+    // Same animation behavior for both mobile and desktop
     gsap.to(navContainerRef.current, {
       y: isNavVisible ? 0 : -100,
       opacity: isNavVisible ? 1 : 0,
@@ -84,58 +69,97 @@ const NavBar = () => {
   }, [isNavVisible]);
 
   return (
-    <nav
+    <div
       ref={navContainerRef}
-      className="fixed top-0 left-0 w-full z-50 transition-all duration-300"
+      className="fixed inset-x-0 top-0 md:top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
     >
-      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-        {/* Logo Video and Product button */}
-        <div className="flex items-center">
-          <video
-            ref={videoRef}
-            className="h-10 w-10 rounded-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-          >
-            <source src="/logo-animation.mp4" type="video/mp4" />
-          </video>
-        </div>
+      <header className="absolute top-1/2 w-full -translate-y-1/2">
+        <nav className="flex size-full items-center justify-between p-4">
+          {/* Logo Video and Product button */}
+          <div className="flex items-center gap-7">
+            <video
+              ref={videoRef}
+              className="h-16 w-auto object-contain"
+              autoPlay
+              muted
+              playsInline
+              loop
+            >
+              <source src="videos/vidlogo.mp4" type="video/mp4" />
+            </video>
+          </div>
 
-        {/* Navigation Links and Audio Button */}
-        <div className="flex items-center space-x-4">
-          <ul className="hidden md:flex space-x-6">
-            {navItems.map((item, index) => (
-              <li key={index} className="text-white hover:text-gray-300 cursor-pointer">
-                {item}
-              </li>
-            ))}
-          </ul>
+          {/* Navigation Links and Audio Button */}
+          <div className="flex h-full items-center">
+            <div className="hidden md:block">
+              {navItems.map((item, index) => (
+                <a
+                  key={index}
+                  href={`#${item.toLowerCase()}`}
+                  className="nav-hover-btn mr-6"
+                >
+                  {item}
+                </a>
+              ))}
+            </div>
 
-          <button
-            onClick={toggleAudioIndicator}
-            className="relative w-8 h-6 flex flex-col justify-between"
-          >
-            {[1, 2, 3, 4].map((bar) => (
-              <span
-                key={bar}
-                className={clsx(
-                  "h-[2px] bg-white transition-all duration-500",
-                  isIndicatorActive
-                    ? "animate-audio-indicator"
-                    : "w-full"
-                )}
-                style={{
-                  animationDelay: `${bar * 0.1}s`,
-                }}
-              ></span>
-            ))}
-          </button>
-        </div>
-      </div>
-      <audio ref={audioElementRef} src="/background-music.mp3" loop />
-    </nav>
+            {/* Mobile Navigation Menu */}
+            {isMobileMenuOpen && (
+              <div className="absolute top-16 right-0 bg-black bg-opacity-90 p-4 md:hidden">
+                {navItems.map((item, index) => (
+                  <a
+                    key={index}
+                    href={`#${item.toLowerCase()}`}
+                    className="block py-2 text-white hover:text-gray-300"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {item}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center">
+              <button
+                onClick={toggleAudioIndicator}
+                className="flex items-center space-x-0.5 ml-6"
+              >
+                <audio
+                  ref={audioElementRef}
+                  className="hidden"
+                  src="/audio/loop.mp3"
+                  loop
+                />
+                {[1, 2, 3, 4].map((bar) => (
+                  <div
+                    key={bar}
+                    className={clsx("indicator-line", {
+                      active: isIndicatorActive,
+                    })}
+                    style={{
+                      animationDelay: `${bar * 0.1}s`,
+                    }}
+                  />
+                ))}
+              </button>
+              
+              {/* Hamburger Menu Button - Only visible on mobile */}
+              <button
+                onClick={toggleMobileMenu}
+                className="ml-4 md:hidden"
+                aria-label="Toggle menu"
+              >
+                <div className="flex flex-col justify-between h-6 w-6">
+                  <span className={`h-0.5 w-6 bg-white transform transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`}></span>
+                  <span className={`h-0.5 w-6 bg-white transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+                  <span className={`h-0.5 w-6 bg-white transform transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`}></span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
+    </div>
   );
 };
 
