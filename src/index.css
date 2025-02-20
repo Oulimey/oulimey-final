@@ -86,28 +86,24 @@ body {
     @apply uppercase font-zentry font-black text-3xl sm:right-10 sm:text-4xl md:text-5xl lg:text-[6rem];
   }
 
-  /* Ultra-thin mobile title styling */
+  /* Comprehensive targeting of all Zentry font elements for mobile */
   @media (max-width: 767px) {
+    .font-zentry,
+    [class*="font-zentry"],
     .hero-heading,
     .bento-title,
     .bento-title-small,
     .animated-word,
-    .animated-title {
-      font-weight: 100;
+    .animated-title,
+    .special-font,
+    .special-font b {
+      font-weight: 100 !important;
       letter-spacing: 0.05em;
       -webkit-text-stroke: 0.35px;
       text-shadow: 0 0 0.5px rgba(0,0,0,0.05);
       opacity: 0.95;
       transform: scale(1, 0.98);
-    }
-    
-    /* Specific adjustments for different title types */
-    .hero-heading {
       -webkit-font-smoothing: antialiased;
-    }
-    
-    .bento-title, .bento-title-small {
-      -webkit-text-stroke: 0.25px;
       font-stretch: 95%;
     }
   }
