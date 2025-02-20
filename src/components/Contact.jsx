@@ -36,10 +36,10 @@ const Contact = () => {
                   <div className="flex items-center space-x-3">
                     <Mail className="h-4 w-4 text-cream-50" />
                     <a
-                      href="mailto:oulimeyounes@gmail.com"
+                      href="mailto:contact@oulimey.net"
                       className="text-sm text-cream-50 hover:text-white"
                     >
-                      oulimeyounes@gmail.com
+                      contact@oulimey.net
                     </a>
                   </div>
                   <div className="flex items-center space-x-3">
