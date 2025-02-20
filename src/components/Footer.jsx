@@ -4,7 +4,7 @@ const socialLinks = [
   { href: "https://www.instagram.com/_oulimey_/", icon: <FaInstagram /> },
   { href: "https://www.facebook.com/oulimeyounes/", icon: <FaFacebook /> },
   { href: "https://wa.me/8619945162536", icon: <FaWhatsapp /> },
-  { href: "mailto:oulimeyounes@gmail.com?subject=Hello&body=I%20would%20like%20to%20connect", icon: <FaEnvelope /> },
+  { href: "mailto:contact@oulimey.net?subject=Hello&body=I%20would%20like%20to%20connect", icon: <FaEnvelope /> },
 ];
 
 const Footer = () => {
